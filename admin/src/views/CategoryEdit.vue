@@ -24,7 +24,17 @@ export default {
   },
   methods: {
     // 提交表单
-    save() {},
+    async save() {
+      // Es6新语法，使用async/await使异步操作写法和同步一样，post请求第一个参数代表请求的接口/路由，第二个参数要发送的数据
+      const res = await this.$http.post('categories',this.modal);
+      // 请求成功后，页面跳转
+      console.log('提交表单',res);
+      this.$router.push('/categories/list');
+      this.$message({
+        type: 'success',
+        message: '保存成功'
+      })
+    },
   }
 }
 </script>
