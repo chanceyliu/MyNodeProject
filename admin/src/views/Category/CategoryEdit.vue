@@ -2,6 +2,17 @@
   <div class="about">
     <h1>{{id ? '编辑' : '新建'}}分类</h1>
     <el-form label-width="120px" @submit.native.prevent="save">
+      <el-form-item label="上级分类">
+        <el-select v-model="modal.parent">
+          <el-option
+            v-for="item in parentsOptions"
+            :key="item._id"
+            :label="item.name"
+            :value="item._id"
+          ></el-option>
+        </el-select>
+      </el-form-item>
+
       <el-form-item label="名称">
         <el-input v-model="modal.name"></el-input>
       </el-form-item>
@@ -23,18 +34,26 @@ export default {
   },
   data() {
     return {
-      modal: {}
+      modal: {},
+      parentsOptions: []
     };
   },
   created() {
+    this.findAllCategory();
     // 当id不为空才会执行后面的方法
     this.id && this.findCategoryById(this.id);
   },
   methods: {
+    // 查询所有分类
+    async findAllCategory() {
+      const res = await this.$http.get(`rest/categories`);
+      console.log("查询所有分类", res);
+      this.parentsOptions = res.data;
+    },
     // 通过id查询分类
     async findCategoryById(id) {
-      const res = await this.$http.get(`categories/${id}`);
-      console.log(res);
+      const res = await this.$http.get(`rest/categories/${id}`);
+      console.log("通过id查询分类", res);
       this.modal = res.data;
     },
     // 提交表单
@@ -43,10 +62,10 @@ export default {
       let res;
       if (this.id) {
         // 存在id则做编辑
-        res = await this.$http.put(`categories/${this.id}`, this.modal);
+        res = await this.$http.put(`rest/categories/${this.id}`, this.modal);
       } else {
         // 不存在则做新增
-        res = await this.$http.post("categories", this.modal);
+        res = await this.$http.post("rest/categories", this.modal);
       }
       // 请求成功后，页面跳转
       console.log("提交表单", res);
