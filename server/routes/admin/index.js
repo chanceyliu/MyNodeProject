@@ -26,7 +26,7 @@ module.exports = app => {
             queryOptions.populate = 'parent'
         }
         // limit(10)限制查询10条,setOptions使我们需要关联查询的字段变为动态的
-        const items = await req.Model.find().setOptions(queryOptions).limit(10)
+        const items = await req.Model.find().setOptions(queryOptions)
         res.send(items)
     })
     // 通过id查询分类
@@ -49,4 +49,17 @@ module.exports = app => {
         // 调用next(),执行完当前函数，继续执行下一个，一般来说最后一个操作就直接省略掉了next()
         next()
     }, router)
+
+
+    // 上传文件接口
+    const multer = require('multer')
+    // 定义文件要上传到服务端项目的哪个文件夹下
+    const upload = multer({
+        dest: __dirname + '/../../uploads/'
+    })
+    app.post('/admin/api/upload', upload.single('file'), async (req, res) => {
+        const file = req.file
+        file.url = `http://localhost:3000/uploads/${file.filename}`
+        res.send(file)
+    })
 }

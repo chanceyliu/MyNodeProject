@@ -7,7 +7,15 @@
       </el-form-item>
 
       <el-form-item label="图标">
-        <el-input v-model="modal.icon"></el-input>
+        <el-upload
+          class="avatar-uploader"
+          :action="$http.defaults.baseURL + '/upload'"
+          :show-file-list="false"
+          :on-success="afterUpload"
+        >
+          <img v-if="modal.icon" :src="modal.icon" class="avatar" />
+          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+        </el-upload>
       </el-form-item>
 
       <el-form-item>
@@ -27,7 +35,7 @@ export default {
   },
   data() {
     return {
-      modal: {},
+      modal: {}
     };
   },
   created() {
@@ -35,11 +43,16 @@ export default {
     this.id && this.findItemById(this.id);
   },
   methods: {
+    // 上传图片
+    afterUpload(res) {
+      // 当你要赋值的这个对象在一开始的data中并没有定义这个属性的时候，最好使用vue提供的$set方法显示赋值
+      this.$set(this.modal, "icon", res.url);
+    },
     // 通过id查询分类
     async findItemById(id) {
       const res = await this.$http.get(`rest/items/${id}`);
-      console.log("通过id查询分类", res);
       this.modal = res.data;
+      console.log(this.modal)
     },
     // 提交表单
     async save() {
@@ -63,3 +76,6 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+</style>
