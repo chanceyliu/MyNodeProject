@@ -2,91 +2,135 @@
   <div class="about">
     <h1>{{id ? '编辑' : '新建'}}英雄</h1>
     <el-form label-width="120px" @submit.native.prevent="save">
-      <el-form-item label="名称">
-        <el-input v-model="modal.name"></el-input>
-      </el-form-item>
+      <el-tabs type="border-card">
+        <el-tab-pane label="基础信息">
+          <el-form-item label="名称">
+            <el-input v-model="modal.name"></el-input>
+          </el-form-item>
 
-      <el-form-item label="头像">
-        <el-upload
-          class="avatar-uploader"
-          :action="$http.defaults.baseURL + '/upload'"
-          :show-file-list="false"
-          :on-success="afterUpload"
-        >
-          <img v-if="modal.avatar" :src="modal.avatar" class="avatar" />
-          <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-        </el-upload>
-      </el-form-item>
+          <el-form-item label="头像">
+            <el-upload
+              class="avatar-uploader"
+              :action="$http.defaults.baseURL + '/upload'"
+              :show-file-list="false"
+              :on-success="afterUpload"
+            >
+              <img v-if="modal.avatar" :src="modal.avatar" class="avatar" />
+              <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+            </el-upload>
+          </el-form-item>
 
-      <el-form-item label="称号">
-        <el-input v-model="modal.title"></el-input>
-      </el-form-item>
+          <el-form-item label="称号">
+            <el-input v-model="modal.title"></el-input>
+          </el-form-item>
 
-      <el-form-item label="类型">
-        <el-select v-model="modal.categories" multiple>
-          <el-option
-            v-for="item in categoriesOptions"
-            :key="item._id"
-            :label="item.name"
-            :value="item._id"
-          ></el-option>
-        </el-select>
-      </el-form-item>
+          <el-form-item label="类型">
+            <el-select v-model="modal.categories" multiple>
+              <el-option
+                v-for="item in categoriesOptions"
+                :key="item._id"
+                :label="item.name"
+                :value="item._id"
+              ></el-option>
+            </el-select>
+          </el-form-item>
 
-      <el-form-item label="操作难度">
-        <el-rate style="margin-top: 0.6rem" v-model="modal.scores.difficult" :max=9 show-score></el-rate>
-      </el-form-item>
-      <el-form-item label="技能评分">
-        <el-rate style="margin-top: 0.6rem" v-model="modal.scores.skills" :max=9 show-score></el-rate>
-      </el-form-item>
-      <el-form-item label="攻击评分">
-        <el-rate style="margin-top: 0.6rem" v-model="modal.scores.attack" :max=9 show-score></el-rate>
-      </el-form-item>
-      <el-form-item label="生存评分">
-        <el-rate style="margin-top: 0.6rem" v-model="modal.scores.survive" :max=9 show-score></el-rate>
-      </el-form-item>
+          <el-form-item label="操作难度">
+            <el-rate
+              style="margin-top: 0.6rem"
+              v-model="modal.scores.difficult"
+              :max="9"
+              show-score
+            ></el-rate>
+          </el-form-item>
+          <el-form-item label="技能评分">
+            <el-rate style="margin-top: 0.6rem" v-model="modal.scores.skills" :max="9" show-score></el-rate>
+          </el-form-item>
+          <el-form-item label="攻击评分">
+            <el-rate style="margin-top: 0.6rem" v-model="modal.scores.attack" :max="9" show-score></el-rate>
+          </el-form-item>
+          <el-form-item label="生存评分">
+            <el-rate style="margin-top: 0.6rem" v-model="modal.scores.survive" :max="9" show-score></el-rate>
+          </el-form-item>
 
-      <el-form-item label="顺风出装">
-        <el-select v-model="modal.items1.item" multiple>
-          <el-option
-            v-for="item in itemsOptions"
-            :key="item._id"
-            :label="item.name"
-            :value="item._id"
-          ></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="顺风提示">
-        <el-input v-model="modal.items1.tips"></el-input>
-      </el-form-item>
+          <el-form-item label="顺风出装">
+            <el-select v-model="modal.items1.item" multiple>
+              <el-option
+                v-for="item in itemsOptions"
+                :key="item._id"
+                :label="item.name"
+                :value="item._id"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="顺风提示">
+            <el-input v-model="modal.items1.tips"></el-input>
+          </el-form-item>
 
-      <el-form-item label="逆风出装">
-        <el-select v-model="modal.items2.item" multiple>
-          <el-option
-            v-for="item in itemsOptions"
-            :key="item._id"
-            :label="item.name"
-            :value="item._id"
-          ></el-option>
-        </el-select>
-      </el-form-item>
-      <el-form-item label="逆风提示">
-        <el-input v-model="modal.items2.tips"></el-input>
-      </el-form-item>
+          <el-form-item label="逆风出装">
+            <el-select v-model="modal.items2.item" multiple>
+              <el-option
+                v-for="item in itemsOptions"
+                :key="item._id"
+                :label="item.name"
+                :value="item._id"
+              ></el-option>
+            </el-select>
+          </el-form-item>
+          <el-form-item label="逆风提示">
+            <el-input v-model="modal.items2.tips"></el-input>
+          </el-form-item>
 
-      <el-form-item label="使用技巧">
-        <el-input type="textarea" v-model="modal.usageIips"></el-input>
-      </el-form-item>
+          <el-form-item label="使用技巧">
+            <el-input type="textarea" v-model="modal.usageIips"></el-input>
+          </el-form-item>
 
-      <el-form-item label="对抗技巧">
-        <el-input type="textarea" v-model="modal.battleIips"></el-input>
-      </el-form-item>
+          <el-form-item label="对抗技巧">
+            <el-input type="textarea" v-model="modal.battleIips"></el-input>
+          </el-form-item>
 
-      <el-form-item label="团战思路">
-        <el-input type="textarea" v-model="modal.teamIips"></el-input>
-      </el-form-item>
+          <el-form-item label="团战思路">
+            <el-input type="textarea" v-model="modal.teamIips"></el-input>
+          </el-form-item>
+        </el-tab-pane>
+        <el-tab-pane label="技能信息">
+          <el-button size="small" @click="modal.skills.push({})">
+            <i class="el-icon-plus"></i>添加技能
+          </el-button>
+          <el-row type="flex" style="flex-wrap:wrap">
+            <el-col :md="12" v-for="(item,index) in modal.skills" :key="index">
+              <el-form-item label="名称">
+                <el-input v-model="item.name"></el-input>
+              </el-form-item>
 
-      <el-form-item>
+              <el-form-item label="图标">
+                <el-upload
+                  class="avatar-uploader"
+                  :action="$http.defaults.baseURL + '/upload'"
+                  :show-file-list="false"
+                  :on-success="res => $set(item, 'icon', res.url)"
+                >
+                  <img v-if="item.icon" :src="item.icon" class="avatar" />
+                  <i v-else class="el-icon-plus avatar-uploader-icon"></i>
+                </el-upload>
+              </el-form-item>
+
+              <el-form-item label="描述">
+                <el-input type="textarea" v-model="item.description"></el-input>
+              </el-form-item>
+
+              <el-form-item label="小提示">
+                <el-input type="textarea" v-model="item.tips"></el-input>
+              </el-form-item>
+
+              <el-form-item>
+                <el-button type="danger" size="small" @click="modal.skills.splice(index,1)">删除</el-button>
+              </el-form-item>
+            </el-col>
+          </el-row>
+        </el-tab-pane>
+      </el-tabs>
+      <el-form-item style="margin-top:1rem">
         <el-button type="primary" native-type="submit">保存</el-button>
       </el-form-item>
     </el-form>
@@ -113,7 +157,8 @@ export default {
         items2: {},
         usageIips: "",
         battleIips: "",
-        teamIips: ""
+        teamIips: "",
+        skills: []
       },
       categoriesOptions: [],
       itemsOptions: []
