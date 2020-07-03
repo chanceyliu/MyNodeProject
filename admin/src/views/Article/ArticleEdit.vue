@@ -18,20 +18,24 @@
       </el-form-item>
 
       <el-form-item label="内容">
-        <el-input v-model="modal.body"></el-input>
+        <vue-editor v-model="modal.body" useCustomImageHandler @image-added="handleImageAdded"></vue-editor>
       </el-form-item>
 
       <el-form-item>
         <el-button type="primary" native-type="submit">保存</el-button>
       </el-form-item>
     </el-form>
-    
   </div>
 </template>
 
 <script>
+import { VueEditor } from "vue2-editor";
+
 export default {
   name: "ArticleEdit",
+  components: {
+    VueEditor
+  },
   props: {
     id: {
       type: String
@@ -44,12 +48,34 @@ export default {
     };
   },
   created() {
-    console.log('文章列表')
     this.findAllCategory();
     // 当id不为空才会执行后面的方法
     this.id && this.findArticleById(this.id);
   },
   methods: {
+    // 在富文本编辑器中上传图片
+    async handleImageAdded(file, Editor, cursorLocation, resetUploader) {
+      let formData = new FormData();
+      formData.append("file", file);
+
+      const res = await this.$http.post("upload", formData);
+      Editor.insertEmbed(cursorLocation, "image", res.data.url);
+      resetUploader();
+
+      // axios({
+      //   url: "https://fakeapi.yoursite.com/images",
+      //   method: "POST",
+      //   data: formData
+      // })
+      //   .then(result => {
+      //     let url = result.data.url; // Get url from response
+      //     Editor.insertEmbed(cursorLocation, "image", url);
+      //     resetUploader();
+      //   })
+      //   .catch(err => {
+      //     console.log(err);
+      //   });
+    },
     // 查询所有分类
     async findAllCategory() {
       const res = await this.$http.get(`rest/categories`);
