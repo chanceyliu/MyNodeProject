@@ -2,6 +2,9 @@ const express = require("express")
 
 const app = express()
 
+// 定义一个全局变量
+app.set('secret','walyjybz')
+
 // 引用跨域模块，express框架内置的转json方法
 app.use(require('cors')())
 app.use(express.json())

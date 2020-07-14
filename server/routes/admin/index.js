@@ -62,4 +62,33 @@ module.exports = app => {
         file.url = `http://localhost:3000/uploads/${file.filename}`
         res.send(file)
     })
+
+    // 登录接口
+    app.post('/admin/api/login', async (req, res) => {
+        // 对象解构赋值
+        const { username, password } = req.body;
+        // 1.根据用户名在数据库中找到该用户数据(因为之前查询用户信息时屏蔽了密码，所以现在要加上)
+        const AdminUser = require('../../models/AdminUser');
+        const user = await AdminUser.findOne({
+            name: username
+        }).select('+password');
+        console.log(user)
+        if (!user) {
+            return res.status(422).send({
+                message: '用户不存在'
+            })
+        }
+        // 2.校验密码
+        // 利用bcryptjs内置方法比对密码和散列后的密码是否匹配
+        const isValid  = require('bcryptjs').compareSync(password, user.password);
+        if(!isValid) {
+            return res.status(422).send({
+                message: '密码错误'
+            })
+        }
+        // 3.返回token
+        const jwt = require('jsonwebtoken');
+        const token = jwt.sign({ id: user._id },app.get('secret'));
+        res.send({token})
+    })
 }

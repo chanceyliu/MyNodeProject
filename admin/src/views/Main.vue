@@ -97,9 +97,6 @@ export default {
       tableData: Array(20).fill(item)
     };
   },
-  created() {
-    console.log(this.$route.path)
-  },
 };
 </script>
 
