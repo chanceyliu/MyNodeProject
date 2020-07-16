@@ -1,7 +1,9 @@
 module.exports = app => {
     // 使用module.exports这种写法既将该文件导出是一个函数，方便外部引用后可直接调用
     // 引用express
-    const express = require('express')
+    const express = require('express');
+    const jwt = require('jsonwebtoken');
+    const AdminUser = require('../../models/AdminUser');
     // 调用express框架的子路由
     const router = express.Router({
         // 表示将路径合并至可获取的参数里
@@ -20,7 +22,15 @@ module.exports = app => {
         res.send(model)
     })
     // 查询分类
-    router.get('/', async (req, res) => {
+    router.get('/', async (req, res, next) => {
+        // 取出前端传入的token
+        const token = String(req.headers.authorization || '').split(' ')[1];
+        // 解密token并校验，返回登录用户的ID
+        const { id } = jwt.verify(token, app.get('secret'));
+        req.user = await AdminUser.findById(id)
+        console.log(req.user)
+        await next()
+    }, async (req, res) => {
         const queryOptions = {}
         if (req.Model.modelName === 'Category') {
             queryOptions.populate = 'parent'
@@ -68,7 +78,6 @@ module.exports = app => {
         // 对象解构赋值
         const { username, password } = req.body;
         // 1.根据用户名在数据库中找到该用户数据(因为之前查询用户信息时屏蔽了密码，所以现在要加上)
-        const AdminUser = require('../../models/AdminUser');
         const user = await AdminUser.findOne({
             name: username
         }).select('+password');
@@ -80,15 +89,14 @@ module.exports = app => {
         }
         // 2.校验密码
         // 利用bcryptjs内置方法比对密码和散列后的密码是否匹配
-        const isValid  = require('bcryptjs').compareSync(password, user.password);
-        if(!isValid) {
+        const isValid = require('bcryptjs').compareSync(password, user.password);
+        if (!isValid) {
             return res.status(422).send({
                 message: '密码错误'
             })
         }
         // 3.返回token
-        const jwt = require('jsonwebtoken');
-        const token = jwt.sign({ id: user._id },app.get('secret'));
-        res.send({token})
+        const token = jwt.sign({ id: user._id }, app.get('secret'));
+        res.send({ token })
     })
 }
