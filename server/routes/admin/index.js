@@ -1,8 +1,11 @@
+const auth = require('../../middleware/auth');
+
 module.exports = app => {
     // 使用module.exports这种写法既将该文件导出是一个函数，方便外部引用后可直接调用
     // 引用express
     const express = require('express');
     const jwt = require('jsonwebtoken');
+    const assert = require('http-assert');
     const AdminUser = require('../../models/AdminUser');
     // 调用express框架的子路由
     const router = express.Router({
@@ -10,6 +13,9 @@ module.exports = app => {
         mergeParams: true
     })
     // const Category = require('../../models/Category')
+
+    // 自行封装的登录校验中间件
+    const authMiddleware = require('../../middleware/auth')
 
     // 创建分类
     router.post('/', async (req, res) => {
@@ -22,15 +28,7 @@ module.exports = app => {
         res.send(model)
     })
     // 查询分类
-    router.get('/', async (req, res, next) => {
-        // 取出前端传入的token
-        const token = String(req.headers.authorization || '').split(' ')[1];
-        // 解密token并校验，返回登录用户的ID
-        const { id } = jwt.verify(token, app.get('secret'));
-        req.user = await AdminUser.findById(id)
-        console.log(req.user)
-        await next()
-    }, async (req, res) => {
+    router.get('/', async (req, res) => {
         const queryOptions = {}
         if (req.Model.modelName === 'Category') {
             queryOptions.populate = 'parent'
@@ -53,7 +51,7 @@ module.exports = app => {
             })
     })
 
-    app.use('/admin/api/rest/:resource', async (req, res, next) => {
+    app.use('/admin/api/rest/:resource', authMiddleware(), async (req, res, next) => {
         const modelName = require('inflection').classify(req.params.resource)
         req.Model = require(`../../models/${modelName}`)
         // 调用next(),执行完当前函数，继续执行下一个，一般来说最后一个操作就直接省略掉了next()
@@ -67,7 +65,7 @@ module.exports = app => {
     const upload = multer({
         dest: __dirname + '/../../uploads/'
     })
-    app.post('/admin/api/upload', upload.single('file'), async (req, res) => {
+    app.post('/admin/api/upload', authMiddleware(), upload.single('file'), async (req, res) => {
         const file = req.file
         file.url = `http://localhost:3000/uploads/${file.filename}`
         res.send(file)
@@ -81,22 +79,21 @@ module.exports = app => {
         const user = await AdminUser.findOne({
             name: username
         }).select('+password');
-        console.log(user)
-        if (!user) {
-            return res.status(422).send({
-                message: '用户不存在'
-            })
-        }
+        assert(user, 422, '用户不存在');
         // 2.校验密码
         // 利用bcryptjs内置方法比对密码和散列后的密码是否匹配
         const isValid = require('bcryptjs').compareSync(password, user.password);
-        if (!isValid) {
-            return res.status(422).send({
-                message: '密码错误'
-            })
-        }
+        assert(isValid, 422, '密码错误');
         // 3.返回token
         const token = jwt.sign({ id: user._id }, app.get('secret'));
         res.send({ token })
+    })
+
+    // 通过组件http-assert自定义一个错误处理函数
+    app.use(async (err, req, res, next) => {
+        console.log(err)
+        res.status(err.statusCode || 500).send({
+            message: err.message
+        })
     })
 }

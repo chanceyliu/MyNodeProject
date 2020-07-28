@@ -24,8 +24,9 @@ import AdminUserList from '../views/AdminUser/AdminUserList.vue'
 
 Vue.use(VueRouter)
 
+// 只有登录页面是无需任何操作即可访问，其他页面必须登录后才能访问
 const routes = [
-  { path: '/login', name: 'login', component: Login },
+  { path: '/login', name: 'login', component: Login, meta: { isPublic: true } },
   {
     path: '/',
     name: 'main',
@@ -60,6 +61,14 @@ const routes = [
 
 const router = new VueRouter({
   routes
+})
+
+router.beforeEach((to, from, next) => {
+  if (!to.meta.isPublic && !localStorage.token) {
+    next('/login')
+  } else {
+    next()
+  }
 })
 
 export default router
